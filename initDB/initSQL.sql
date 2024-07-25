@@ -35,6 +35,7 @@ INSERT INTO customer_point (nm_customer, id_point, point_type, point_customer, n
 ('Palagan Agung', 'PID002', 'Kuaci Fuzo', 20, 6281209762851, 'Suite 452 89340 Pfeffer Crossroad, South Kandramouth, LA 62692'),
 ('Amira Azzahra', 'PID001', 'Roma Arden', 10, 6281209762332, '581 Donya Fords, South Marvinfurt, TN 00214-2636');
 
+
 CREATE TABLE point_details (
     id_point_detail VARCHAR PRIMARY KEY,
     id_customer VARCHAR REFERENCES customer_point(id_customer),
@@ -43,6 +44,19 @@ CREATE TABLE point_details (
     transaction_type VARCHAR,
     transaction_date TIMESTAMP
 );
+
+CREATE OR REPLACE FUNCTION generate_id_point_detail()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.id_point_detail := 'IDP' || LPAD(nextval('customer_id_seq')::TEXT, 3, '0');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER before_insert_customer_point
+BEFORE INSERT ON point_details
+FOR EACH ROW
+EXECUTE FUNCTION generate_id_point_detail();
 
 INSERT INTO point_details (id_point_detail, id_customer, id_point, point_amount, transaction_type, transaction_date) VALUES
 ('IDP001', 'C001', 'PID001', 10, 'IN', '2024-06-25'),
